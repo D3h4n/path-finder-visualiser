@@ -22,10 +22,11 @@ const NodeColor = new Map([
 ]);
 interface Props {
   node: Node;
-  handleUpdateSquare: (pos: string) => void;
+  debug: boolean;
+  handleUpdateSquare: (node: Node) => void;
 }
 
-export default function Square({ node, handleUpdateSquare }: Props) {
+export default function Square({ node, debug, handleUpdateSquare }: Props) {
   const [backgroundColor, setBackgroundColor] = useState<string>();
 
   const handleUpdateBackground = () => {
@@ -47,34 +48,36 @@ export default function Square({ node, handleUpdateSquare }: Props) {
         outline: '1px solid',
       }}
       onClick={() => {
-        handleUpdateSquare(node.coord);
+        handleUpdateSquare(node);
       }}
     >
-      {node.type > NodeType.End && [
-        <p
-          key={0}
-          style={{
-            position: 'absolute',
-            fontSize: '0.5rem',
-            top: '-0.5rem',
-            left: '0.15rem',
-          }}
-        >
-          {node.gCost.toFixed(1)}
-        </p>,
-        <p key={1}>{node.fCost.toFixed(1)}</p>,
-        <p
-          key={2}
-          style={{
-            position: 'absolute',
-            fontSize: '0.5rem',
-            bottom: '-0.5rem',
-            right: '0.15rem',
-          }}
-        >
-          {node.hCost.toFixed(1)}
-        </p>,
-      ]}
+      {debug &&
+        node.type !== NodeType.Empty &&
+        node.type !== NodeType.Wall && [
+          <p
+            key={0}
+            style={{
+              position: 'absolute',
+              fontSize: '0.5rem',
+              top: '-0.5rem',
+              left: '0.15rem',
+            }}
+          >
+            {node.gCost < 99.0 ? node.gCost.toFixed(1) : '∞'}
+          </p>,
+          <p key={1}>{node.fCost < 99.0 ? node.fCost.toFixed(1) : '∞'}</p>,
+          <p
+            key={2}
+            style={{
+              position: 'absolute',
+              fontSize: '0.5rem',
+              bottom: '-0.5rem',
+              right: '0.15rem',
+            }}
+          >
+            {node.hCost.toFixed(1)}
+          </p>,
+        ]}
     </div>
   );
 }
@@ -105,7 +108,7 @@ export class Node {
     this.fCost = this.hCost + this.gCost;
   }
 
-  calculateHCost([x, y]: [number, number]) {
+  calculateHCost(x: number, y: number) {
     this.hCost = Math.abs(this.x - x) + Math.abs(this.y - y);
   }
 
