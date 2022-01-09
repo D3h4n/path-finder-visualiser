@@ -3,8 +3,6 @@ import Square, { Node, NodeType } from './Square';
 import './App.css';
 import Heap from 'heap-js';
 
-export const SIZE = 9;
-
 enum Operation {
   SelectStart,
   SelectEnd,
@@ -23,6 +21,8 @@ interface State {
 }
 
 function App() {
+  const [gridSize, setGridSize] = useState<number>(5);
+  const [speed, setSpeed] = useState<number>(1);
   const [squares, setSquares] = useState<Map<string, Node>>(new Map());
   const [state, setState] = useState<State>({
     operation: Operation.SelectStart,
@@ -53,11 +53,11 @@ function App() {
   const reset = () => {
     setSquares(
       new Map(
-        [...new Array(SIZE ** 2)].map((_, idx) => {
-          const x = idx % SIZE;
-          const y = Math.floor(idx / SIZE);
+        [...new Array(gridSize ** 2)].map((_, idx) => {
+          const x = idx % gridSize;
+          const y = Math.floor(idx / gridSize);
 
-          return [`${x},${y}`, new Node(x, y)];
+          return [`${x},${y}`, new Node(x, y, gridSize)];
         })
       )
     );
@@ -201,7 +201,7 @@ function App() {
 
     //TODO: Fix error where nodes already in the closed list are readded to the open list
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50 / speed));
 
     let ret = true;
 
@@ -252,13 +252,13 @@ function App() {
     });
 
     return ret;
-  }, [state, closedList, openList, visited]);
+  }, [state, closedList, openList, visited, speed]);
 
   const handleSkip = useCallback(async () => {
     while (await handleStart());
   }, [handleStart]);
 
-  useEffect(reset, []);
+  useEffect(reset, [gridSize, speed]);
 
   return (
     <>
@@ -266,7 +266,7 @@ function App() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${SIZE}, auto)`,
+          gridTemplateColumns: `repeat(${gridSize}, auto)`,
           justifyContent: 'center',
           alignSelf: 'center',
         }}
@@ -283,21 +283,76 @@ function App() {
       <div
         style={{
           position: 'fixed',
-          top: '50vh',
-          right: '2rem',
+          top: '2rem',
+          left: '2rem',
           display: 'flex',
           justifyContent: 'space-between',
           flexDirection: 'column',
+          width: '20vw',
         }}
       >
         <p
           style={{
             display: state.debug ? 'block' : 'none',
             position: 'fixed',
-            top: '5px',
-            right: '5px',
+            top: '2rem',
+            right: '2rem',
           }}
-        >{`Position: ${currentNode?.coord} FCost: ${currentNode?.fCost}`}</p>
+        >{`Position: ${currentNode?.coord} FCost: ${currentNode?.fCost.toFixed(
+          2
+        )}`}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <label>Grid Size</label>
+          <select onChange={(e) => setGridSize(Number(e.target.value))}>
+            <option value="5">5x5</option>
+            <option value="10">10x10</option>
+            <option value="20">20x20</option>
+          </select>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <label>Speed</label>
+          <input
+            type="number"
+            value={speed}
+            style={{
+              width: '3rem',
+            }}
+            onChange={(e) => {
+              let num = Number(e.target.value);
+
+              if (num < 1) {
+                num = 1;
+              }
+
+              if (num > 5) {
+                num = 5;
+              }
+
+              setSpeed(num);
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <label>Diagonals</label>
+          <input
+            type="checkbox"
+            checked={state.diagonals}
+            onChange={(e) =>
+              setState((prev) => ({ ...prev, diagonals: e.target.checked }))
+            }
+          />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <label>Debug</label>
+          <input
+            type="checkbox"
+            checked={state.debug}
+            onChange={(e) =>
+              setState((prev) => ({ ...prev, debug: e.target.checked }))
+            }
+          />
+        </div>
+        <p></p>
         <button onClick={() => reset()}>Reset</button>
         <button
           disabled={
@@ -312,7 +367,10 @@ function App() {
           {state.operation <= Operation.SelectWalls ? 'Start' : 'Next'}
         </button>
         <button
-          disabled={state.operation < Operation.SelectWalls}
+          disabled={
+            state.operation < Operation.SelectWalls ||
+            state.operation >= Operation.PathFound
+          }
           onClick={() => {
             setState((prev) => ({ ...prev, operation: Operation.FindPath }));
             handleSkip();
@@ -320,26 +378,6 @@ function App() {
         >
           Run
         </button>
-        <div>
-          <label>Diagonals</label>
-          <input
-            type="checkbox"
-            checked={state.diagonals}
-            onChange={(e) =>
-              setState((prev) => ({ ...prev, diagonals: e.target.checked }))
-            }
-          />
-        </div>
-        <div>
-          <label>Debug</label>
-          <input
-            type="checkbox"
-            checked={state.debug}
-            onChange={(e) =>
-              setState((prev) => ({ ...prev, debug: e.target.checked }))
-            }
-          />
-        </div>
       </div>
     </>
   );

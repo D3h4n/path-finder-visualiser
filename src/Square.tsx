@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { SIZE } from './App';
 
 export enum NodeType {
   Empty,
@@ -93,7 +92,7 @@ export class Node {
   neighbours: [string, number][];
   prevNode: Node | undefined;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, gridSize: number) {
     this.x = x;
     this.y = y;
     this.coord = `${x},${y}`;
@@ -101,7 +100,7 @@ export class Node {
     this.fCost = Number.MAX_VALUE;
     this.hCost = 0;
     this.gCost = Number.MAX_VALUE;
-    this.neighbours = Node.getNeighbours(x, y);
+    this.neighbours = Node.getNeighbours(x, y, gridSize);
   }
 
   calculateFCost() {
@@ -112,7 +111,11 @@ export class Node {
     this.hCost = Math.abs(this.x - x) + Math.abs(this.y - y);
   }
 
-  static getNeighbours(x: number, y: number): [string, number][] {
+  static getNeighbours(
+    x: number,
+    y: number,
+    gridSize: number
+  ): [string, number][] {
     let neighbours: [string, number][] = [];
 
     if (x > 0) {
@@ -122,19 +125,19 @@ export class Node {
         neighbours.push([`${x - 1},${y - 1}`, 1.4]);
       }
 
-      if (y < SIZE - 1) {
+      if (y < gridSize - 1) {
         neighbours.push([`${x - 1},${y + 1}`, 1.4]);
       }
     }
 
-    if (x < SIZE - 1) {
+    if (x < gridSize - 1) {
       neighbours.push([`${x + 1},${y}`, 1]);
 
       if (y > 0) {
         neighbours.push([`${x + 1},${y - 1}`, 1.4]);
       }
 
-      if (y < SIZE - 1) {
+      if (y < gridSize - 1) {
         neighbours.push([`${x + 1},${y + 1}`, 1.4]);
       }
     }
@@ -143,7 +146,7 @@ export class Node {
       neighbours.push([`${x},${y - 1}`, 1]);
     }
 
-    if (y < SIZE - 1) {
+    if (y < gridSize - 1) {
       neighbours.push([`${x},${y + 1}`, 1]);
     }
 
