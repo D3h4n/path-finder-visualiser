@@ -261,6 +261,7 @@ function App() {
     while (await handleStart());
   }, [handleStart]);
 
+  // eslint-disable-next-line
   useEffect(reset, [gridSize]);
 
   return (
