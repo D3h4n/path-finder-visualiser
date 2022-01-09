@@ -50,7 +50,7 @@ function App() {
   const [visited, setVisited] = useState<Set<string>>(new Set<string>());
   const [currentNode, setCurrentNode] = useState<Node>();
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setSquares(
       new Map(
         [...new Array(gridSize ** 2)].map((_, idx) => {
@@ -70,7 +70,7 @@ function App() {
     setClosedList(new Set<string>());
     setVisited(new Set<string>());
     setCurrentNode(undefined);
-  };
+  }, [gridSize]);
 
   const getHeader = useCallback(() => {
     switch (state.operation) {
@@ -255,14 +255,13 @@ function App() {
     }
 
     return ret;
-  }, [state, closedList, openList, visited, speed, currentNode]);
+  }, [state, closedList, openList, visited, speed, reset]);
 
   const handleSkip = useCallback(async () => {
     while (await handleStart());
   }, [handleStart]);
 
-  // eslint-disable-next-line
-  useEffect(reset, [gridSize]);
+  useEffect(reset, [gridSize, reset]);
 
   return (
     <div>
