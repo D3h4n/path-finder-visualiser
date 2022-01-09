@@ -67,12 +67,9 @@ function App() {
       operation: Operation.SelectStart,
     }));
 
-    setOpenList((prev) => {
-      prev.clear();
-      return prev;
-    });
     setClosedList(new Set<string>());
     setVisited(new Set<string>());
+    setCurrentNode(undefined);
   };
 
   const getHeader = useCallback(() => {
@@ -109,23 +106,28 @@ function App() {
               break;
             }
 
-            node.type = NodeType.Start;
+            node.setType(NodeType.Start);
+            setCurrentNode(node);
             node.gCost = 0;
             node.calculateFCost();
+
             setState((prev) => ({
               ...prev,
               start: node?.coord,
               operation: Operation.SelectEnd,
             }));
+
             setOpenList((prev) => {
+              prev.clear();
               prev.add(node);
               return prev;
             });
+
             setVisited((prev) => {
               prev.add(node.coord);
               return prev;
             });
-            setCurrentNode(node);
+
             break;
 
           case Operation.SelectEnd:
@@ -135,7 +137,7 @@ function App() {
             }
             if (node?.coord === state.start) break;
 
-            node.type = NodeType.End;
+            node.setType(NodeType.End);
 
             setState((prev) => ({
               ...prev,
@@ -155,11 +157,8 @@ function App() {
               alert('error selecting wall');
               break;
             }
-            node.fCost = 0;
-            node.gCost = 0;
-            node.hCost = 0;
-            node.type = NodeType.Wall;
 
+            node.setType(NodeType.Wall);
             break;
 
           default:
@@ -191,28 +190,28 @@ function App() {
       return false;
     }
 
-    node.type = NodeType.Start;
-    setCurrentNode(node);
-
+    node?.setType(NodeType.Visited);
     closedList.add(node.coord);
 
     setOpenList(openList);
     setClosedList(closedList);
 
-    //TODO: Fix error where nodes already in the closed list are readded to the open list
-
-    await new Promise((resolve) => setTimeout(resolve, 50 / speed));
+    //TODO: Fix error where nodes already in the closed list are read to the open list
 
     let ret = true;
 
+    await new Promise((resolve) => setTimeout(resolve, 100 / speed));
     setSquares((prev) => {
       for (let [coord, cost] of node!.neighbours) {
         const neighbour = prev.get(coord)!;
 
-        if (!state.diagonals && cost === 1.4) continue;
-        if (closedList.has(neighbour.coord)) continue;
-        if (neighbour.type === NodeType.Wall) continue;
-        if (neighbour.coord === state.end?.toString()) {
+        if (
+          (!state.diagonals && cost === 1.4) ||
+          closedList.has(neighbour.coord) ||
+          neighbour.type === NodeType.Wall
+        )
+          continue;
+        if (neighbour.coord === state.end) {
           neighbour.gCost = node!.gCost + cost;
           neighbour.calculateFCost();
           let pathNode: Node | undefined = node;
@@ -236,7 +235,7 @@ function App() {
           neighbour.prevNode = node;
 
           if (!visited.has(coord)) {
-            neighbour.type = NodeType.Searching;
+            neighbour.setType(NodeType.Searching);
             visited.add(coord);
             setVisited(visited);
             setOpenList((prev) => {
@@ -246,22 +245,26 @@ function App() {
           }
         }
       }
-
-      node!.type = NodeType.Visited;
       return new Map(prev);
     });
 
+    if (ret) {
+      let nextNode = openList.peek();
+      nextNode?.setType(NodeType.Start);
+      setCurrentNode(nextNode);
+    }
+
     return ret;
-  }, [state, closedList, openList, visited, speed]);
+  }, [state, closedList, openList, visited, speed, currentNode]);
 
   const handleSkip = useCallback(async () => {
     while (await handleStart());
   }, [handleStart]);
 
-  useEffect(reset, [gridSize, speed]);
+  useEffect(reset, [gridSize]);
 
   return (
-    <>
+    <div>
       <h2 style={{ textAlign: 'center' }}>{getHeader()}</h2>
       <div
         style={{
@@ -276,6 +279,7 @@ function App() {
             key={idx}
             node={node}
             debug={state.debug}
+            gridSize={gridSize}
             handleUpdateSquare={handleUpdateSquare}
           />
         ))}
@@ -315,7 +319,7 @@ function App() {
             type="number"
             value={speed}
             style={{
-              width: '3rem',
+              width: '2.5rem',
             }}
             onChange={(e) => {
               let num = Number(e.target.value);
@@ -324,8 +328,8 @@ function App() {
                 num = 1;
               }
 
-              if (num > 5) {
-                num = 5;
+              if (num > 10) {
+                num = 10;
               }
 
               setSpeed(num);
@@ -352,7 +356,7 @@ function App() {
             }
           />
         </div>
-        <p></p>
+        <p />
         <button onClick={() => reset()}>Reset</button>
         <button
           disabled={
@@ -379,7 +383,7 @@ function App() {
           Run
         </button>
       </div>
-    </>
+    </div>
   );
 }
 

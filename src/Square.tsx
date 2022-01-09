@@ -22,10 +22,16 @@ const NodeColor = new Map([
 interface Props {
   node: Node;
   debug: boolean;
+  gridSize: number;
   handleUpdateSquare: (node: Node) => void;
 }
 
-export default function Square({ node, debug, handleUpdateSquare }: Props) {
+export default function Square({
+  node,
+  debug,
+  handleUpdateSquare,
+  gridSize,
+}: Props) {
   const [backgroundColor, setBackgroundColor] = useState<string>();
 
   const handleUpdateBackground = () => {
@@ -36,42 +42,61 @@ export default function Square({ node, debug, handleUpdateSquare }: Props) {
 
   return (
     <div
+      draggable="false"
       style={{
         position: 'relative',
-        height: `2rem`,
-        width: `2rem`,
+        height: gridSize >= 20 ? '1.5rem' : '2rem',
+        width: gridSize >= 20 ? '1.5rem' : '2rem',
         backgroundColor,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         outline: '1px solid',
       }}
-      onClick={() => {
+      onMouseDown={() => {
         handleUpdateSquare(node);
+      }}
+      onMouseOver={(e) => {
+        if (e.buttons === 1) {
+          handleUpdateSquare(node);
+        }
       }}
     >
       {debug &&
         node.type !== NodeType.Empty &&
         node.type !== NodeType.Wall && [
           <p
+            draggable="false"
             key={0}
             style={{
               position: 'absolute',
               fontSize: '0.5rem',
               top: '-0.5rem',
               left: '0.15rem',
+              userSelect: 'none',
             }}
           >
             {node.gCost < 99.0 ? node.gCost.toFixed(1) : '∞'}
           </p>,
-          <p key={1}>{node.fCost < 99.0 ? node.fCost.toFixed(1) : '∞'}</p>,
           <p
+            draggable="false"
+            key={1}
+            style={{
+              fontSize: gridSize >= 20 ? '0.5rem' : '1rem',
+              userSelect: 'none',
+            }}
+          >
+            {node.fCost < 99.0 ? node.fCost.toFixed(1) : '∞'}
+          </p>,
+          <p
+            draggable="false"
             key={2}
             style={{
               position: 'absolute',
               fontSize: '0.5rem',
               bottom: '-0.5rem',
               right: '0.15rem',
+              userSelect: 'none',
             }}
           >
             {node.hCost.toFixed(1)}
@@ -111,6 +136,10 @@ export class Node {
     this.hCost = Math.abs(this.x - x) + Math.abs(this.y - y);
   }
 
+  setType(type: NodeType) {
+    this.type = type;
+  }
+
   static getNeighbours(
     x: number,
     y: number,
@@ -118,36 +147,44 @@ export class Node {
   ): [string, number][] {
     let neighbours: [string, number][] = [];
 
+    // top
+    if (y > 0) {
+      neighbours.push([`${x},${y - 1}`, 1]);
+    }
+
+    // bottom
+    if (y < gridSize - 1) {
+      neighbours.push([`${x},${y + 1}`, 1]);
+    }
+
+    // left
     if (x > 0) {
       neighbours.push([`${x - 1},${y}`, 1]);
 
+      // left top
       if (y > 0) {
         neighbours.push([`${x - 1},${y - 1}`, 1.4]);
       }
 
+      // left bottom
       if (y < gridSize - 1) {
         neighbours.push([`${x - 1},${y + 1}`, 1.4]);
       }
     }
 
+    // right
     if (x < gridSize - 1) {
       neighbours.push([`${x + 1},${y}`, 1]);
 
+      // right top
       if (y > 0) {
         neighbours.push([`${x + 1},${y - 1}`, 1.4]);
       }
 
+      // right bottom
       if (y < gridSize - 1) {
         neighbours.push([`${x + 1},${y + 1}`, 1.4]);
       }
-    }
-
-    if (y > 0) {
-      neighbours.push([`${x},${y - 1}`, 1]);
-    }
-
-    if (y < gridSize - 1) {
-      neighbours.push([`${x},${y + 1}`, 1]);
     }
 
     return neighbours;
