@@ -2,6 +2,9 @@
   "name": "path-visualiser",
   "version": "0.1.0",
   "private": false,
+  "repository": {
+    "url": "https://github.com/D3h4n/path-finding-visualiser"
+  },
   "homepage": "https://d3h4n.github.io/path-finding-visualiser/",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.1",
