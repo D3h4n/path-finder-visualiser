@@ -43,15 +43,9 @@ export default function Square({
   return (
     <div
       draggable="false"
+      className='square'
       style={{
-        position: 'relative',
-        height: gridSize >= 20 ? '1.5rem' : '2rem',
-        width: gridSize >= 20 ? '1.5rem' : '2rem',
         backgroundColor,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        outline: '1px solid',
       }}
       onMouseDown={() => {
         handleUpdateSquare(node);
@@ -68,36 +62,21 @@ export default function Square({
           <p
             draggable="false"
             key={0}
-            style={{
-              position: 'absolute',
-              fontSize: '0.5rem',
-              top: '-0.5rem',
-              left: '0.15rem',
-              userSelect: 'none',
-            }}
+            className = "square-info"
           >
             {node.gCost < 99.0 ? node.gCost.toFixed(1) : '∞'}
           </p>,
           <p
             draggable="false"
             key={1}
-            style={{
-              fontSize: gridSize >= 20 ? '0.5rem' : '1rem',
-              userSelect: 'none',
-            }}
+            className = "square-info"
           >
             {node.fCost < 99.0 ? node.fCost.toFixed(1) : '∞'}
           </p>,
           <p
             draggable="false"
             key={2}
-            style={{
-              position: 'absolute',
-              fontSize: '0.5rem',
-              bottom: '-0.5rem',
-              right: '0.15rem',
-              userSelect: 'none',
-            }}
+            className = "square-info"
           >
             {node.hCost.toFixed(1)}
           </p>,

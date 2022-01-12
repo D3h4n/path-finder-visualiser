@@ -21,7 +21,7 @@ interface State {
 }
 
 function App() {
-  const [gridSize, setGridSize] = useState<number>(5);
+  const [gridSize, setGridSize] = useState<number>(10);
   const [speed, setSpeed] = useState<number>(1);
   const [squares, setSquares] = useState<Map<string, Node>>(new Map());
   const [state, setState] = useState<State>({
@@ -264,14 +264,107 @@ function App() {
   useEffect(reset, [gridSize, reset]);
 
   return (
-    <div>
-      <h2 style={{ textAlign: 'center' }}>{getHeader()}</h2>
-      <div
+    <div className="app">
+      <h2 className='header'>{getHeader()}</h2>
+      <p
         style={{
-          display: 'grid',
+          display: state.debug ? 'block' : 'none',
+          textAlign: 'right',
+          gridColumn: 2,
+          gridRow: 1
+        }}
+      >{`Position: ${currentNode?.coord} FCost: ${currentNode?.fCost.toFixed(
+        2
+      )}`}
+      </p>
+      <div
+        className="menu-bar"
+      >
+        <div className='menu-bar-buttons'>
+          <button className="menu-bar-button" onClick={() => reset()}>Reset</button>
+          <button
+            className="menu-bar-button"
+            disabled={
+              state.operation < Operation.SelectWalls ||
+              state.operation >= Operation.PathFound
+            }
+            onClick={() => {
+              setState((prev) => ({ ...prev, operation: Operation.FindPath }));
+              handleStart();
+            }}
+          >
+            {state.operation <= Operation.SelectWalls ? 'Start' : 'Next'}
+          </button>
+          <button
+            className="menu-bar-button"
+            disabled={
+              state.operation < Operation.SelectWalls ||
+              state.operation >= Operation.PathFound
+            }
+            onClick={() => {
+              setState((prev) => ({ ...prev, operation: Operation.FindPath }));
+              handleSkip();
+            }}
+          >
+            Run
+          </button>
+        </div>
+        <div>
+          <div className="menu-bar-option">
+            <label>Grid Size</label>
+            <select className="menu-bar-option-input" onChange={(e) => setGridSize(Number(e.target.value))}>
+              <option value="10">10x10</option>
+              <option value="15">15x15</option>
+              <option value="20">20x20</option>
+            </select>
+          </div>
+          <div className="menu-bar-option">
+            <label>Speed</label>
+            <input
+              className='menu-bar-option-input'
+              type="number"
+              value={speed}
+              onChange={(e) => {
+                let num = Number(e.target.value);
+
+                if (num < 1) {
+                  num = 1;
+                }
+
+                if (num > 10) {
+                  num = 10;
+                }
+
+                setSpeed(num);
+              }}
+            />
+          </div>
+          <div className="menu-bar-option">
+            <label>Diagonals</label>
+            <input
+              type="checkbox"
+              checked={state.diagonals}
+              onChange={(e) =>
+                setState((prev) => ({ ...prev, diagonals: e.target.checked }))
+              }
+            />
+          </div>
+          <div className="menu-bar-option">
+            <label>Debug</label>
+            <input
+              type="checkbox"
+              checked={state.debug}
+              onChange={(e) =>
+                setState((prev) => ({ ...prev, debug: e.target.checked }))
+              }
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        className="grid"
+        style={{
           gridTemplateColumns: `repeat(${gridSize}, auto)`,
-          justifyContent: 'center',
-          alignSelf: 'center',
         }}
       >
         {[...squares.entries()].map(([_, node], idx) => (
@@ -283,105 +376,6 @@ function App() {
             handleUpdateSquare={handleUpdateSquare}
           />
         ))}
-      </div>
-      <div
-        style={{
-          position: 'fixed',
-          top: '2rem',
-          left: '2rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          flexDirection: 'column',
-          width: '20vw',
-        }}
-      >
-        <p
-          style={{
-            display: state.debug ? 'block' : 'none',
-            position: 'fixed',
-            top: '2rem',
-            right: '2rem',
-          }}
-        >{`Position: ${currentNode?.coord} FCost: ${currentNode?.fCost.toFixed(
-          2
-        )}`}</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <label>Grid Size</label>
-          <select onChange={(e) => setGridSize(Number(e.target.value))}>
-            <option value="5">5x5</option>
-            <option value="10">10x10</option>
-            <option value="20">20x20</option>
-          </select>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <label>Speed</label>
-          <input
-            type="number"
-            value={speed}
-            style={{
-              width: '2.5rem',
-            }}
-            onChange={(e) => {
-              let num = Number(e.target.value);
-
-              if (num < 1) {
-                num = 1;
-              }
-
-              if (num > 10) {
-                num = 10;
-              }
-
-              setSpeed(num);
-            }}
-          />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <label>Diagonals</label>
-          <input
-            type="checkbox"
-            checked={state.diagonals}
-            onChange={(e) =>
-              setState((prev) => ({ ...prev, diagonals: e.target.checked }))
-            }
-          />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <label>Debug</label>
-          <input
-            type="checkbox"
-            checked={state.debug}
-            onChange={(e) =>
-              setState((prev) => ({ ...prev, debug: e.target.checked }))
-            }
-          />
-        </div>
-        <p />
-        <button onClick={() => reset()}>Reset</button>
-        <button
-          disabled={
-            state.operation < Operation.SelectWalls ||
-            state.operation >= Operation.PathFound
-          }
-          onClick={() => {
-            setState((prev) => ({ ...prev, operation: Operation.FindPath }));
-            handleStart();
-          }}
-        >
-          {state.operation <= Operation.SelectWalls ? 'Start' : 'Next'}
-        </button>
-        <button
-          disabled={
-            state.operation < Operation.SelectWalls ||
-            state.operation >= Operation.PathFound
-          }
-          onClick={() => {
-            setState((prev) => ({ ...prev, operation: Operation.FindPath }));
-            handleSkip();
-          }}
-        >
-          Run
-        </button>
       </div>
     </div>
   );
