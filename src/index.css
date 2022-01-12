@@ -1,18 +1,19 @@
 :root {
    --background-color: #394867;
    --secondary-color:#14274E;
+   --button-hover: #1C2F57;
    --text-color:#F1F6F9;
    --border-color: #9BA4B4;
 }
 
-:root {
+/* :root {
    --background-color:#E7DFD5;
    --secondary-color:#84A9AC;
    --text-color:#3B6978;
    --border-color: #204051;
-}
+} */
 
-/*:root {
+/* :root {
    --background-color:#6F4A8E;
    --secondary-color:#221F3B;
    --text-color:#050505;

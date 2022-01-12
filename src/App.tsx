@@ -269,8 +269,8 @@ function App() {
       <p
         style={{
           display: state.debug ? 'block' : 'none',
-          textAlign: 'right',
-          gridColumn: 2,
+          textAlign:"center",
+          gridColumn: 1,
           gridRow: 1
         }}
       >{`Position: ${currentNode?.coord} FCost: ${currentNode?.fCost.toFixed(
