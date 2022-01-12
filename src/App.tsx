@@ -95,7 +95,7 @@ function App() {
   }, [state]);
 
   const handleUpdateSquare = useCallback(
-    (node: Node) => {
+    (node: Node, node_type?: NodeType) => {
       setSquares((_prev) => {
         const prev = new Map(_prev);
 
@@ -151,14 +151,14 @@ function App() {
             break;
 
           case Operation.SelectWalls:
-            if (node?.coord === state.start || node?.coord === state.end) break;
-
             if (!node) {
               alert('error selecting wall');
               break;
             }
 
-            node.setType(NodeType.Wall);
+            if (node.type === NodeType.Start || node.type === NodeType.End) break;
+            
+            node.setType(node_type ?? NodeType.Wall);
             break;
 
           default:

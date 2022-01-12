@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export enum NodeType {
   Empty,
@@ -23,7 +23,7 @@ interface Props {
   node: Node;
   debug: boolean;
   gridSize: number;
-  handleUpdateSquare: (node: Node) => void;
+  handleUpdateSquare: (node: Node, node_type?:NodeType) => void;
 }
 
 export default function Square({
@@ -38,6 +38,18 @@ export default function Square({
     setBackgroundColor(NodeColor.get(node.type));
   };
 
+  const handleMouseDown = useCallback((event) => {
+    switch (event.buttons) {
+      case 1:
+        handleUpdateSquare(node)
+        break;
+
+      case 2:
+        handleUpdateSquare(node, NodeType.Empty);
+        break;
+    }
+  }, [node, handleUpdateSquare])
+
   useEffect(handleUpdateBackground, [node.type]);
 
   return (
@@ -47,14 +59,9 @@ export default function Square({
       style={{
         backgroundColor,
       }}
-      onMouseDown={() => {
-        handleUpdateSquare(node);
-      }}
-      onMouseOver={(e) => {
-        if (e.buttons === 1) {
-          handleUpdateSquare(node);
-        }
-      }}
+      onContextMenu={(e) => e.preventDefault()}
+      onMouseDown={handleMouseDown}
+      onMouseOver={handleMouseDown}
     >
       {debug &&
         node.type !== NodeType.Empty &&
