@@ -61,6 +61,10 @@
    color: var(--text-color);
 }
 
+.menu-bar-option select {
+   cursor: pointer;
+}
+
 .menu-bar-buttons {
    text-align: center;
 }
@@ -82,10 +86,14 @@
    border-radius: 0.25rem;
 }
 
-.menu-bar-button:hover {
+.menu-bar-button:enabled:hover {
    background-color: var(--button-hover);
    border: 1px solid var(--border-color);
    cursor: pointer;
+}
+
+.menu-bar-button:disabled {
+   color: var(--border-color);
 }
 
 .grid {

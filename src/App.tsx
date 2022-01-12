@@ -171,6 +171,15 @@ function App() {
     [state, squares]
   );
 
+  const drawPath = useCallback(async (node: Node) => {
+    while(node.prevNode) {
+      node.setType(NodeType.Path);
+      setCurrentNode(node.prevNode);
+      node = node.prevNode;
+      await new Promise((resolve) => setTimeout(resolve, 50 / speed));
+    }
+  }, [speed]);
+
   const handleStart = useCallback(async () => {
     if (openList.isEmpty()) {
       setState((prev) => ({ ...prev, operation: Operation.PathNotFound }));
@@ -214,12 +223,9 @@ function App() {
         if (neighbour.coord === state.end) {
           neighbour.gCost = node!.gCost + cost;
           neighbour.calculateFCost();
-          let pathNode: Node | undefined = node;
 
-          while (pathNode) {
-            pathNode.type = NodeType.Path;
-            pathNode = pathNode.prevNode;
-          }
+
+          drawPath(node!);
 
           prev.get(state.start!)!.type = NodeType.Start;
           setState((prev) => ({ ...prev, operation: Operation.PathFound }));
@@ -255,11 +261,12 @@ function App() {
     }
 
     return ret;
-  }, [state, closedList, openList, visited, speed, reset]);
+  }, [state, closedList, openList, visited, speed, reset, drawPath]);
 
   const handleSkip = useCallback(async () => {
     while (await handleStart());
   }, [handleStart]);
+
 
   useEffect(reset, [gridSize, reset]);
 
